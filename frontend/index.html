@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Customer Order Reporting System</title>
+    <!-- Inter Font & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-boxes-packing brand-icon"></i>
+                <h2>OrderSystem</h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="orders">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="#" class="nav-item" data-page="daily-report">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>Daily Report</span>
+                </a>
+                <a href="#" class="nav-item" data-page="weekly-report">
+                    <i class="fa-solid fa-calendar-week"></i>
+                    <span>Weekly Report</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="user-role"><i class="fa-solid fa-shield-halved"></i> E-Commerce Admin</span>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="topbar">
+                <div class="page-header-info">
+                    <h1 id="page-title">Dashboard</h1>
+                    <p id="current-date-display" class="date-subtitle"></p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="open-add-modal-btn">
+                        <i class="fa-solid fa-plus"></i> Add Order
+                    </button>
+                </div>
+            </header>
+
+            <!-- Alert Toast Container -->
+            <div id="toast-container"></div>
+
+            <!-- Page 1: Dashboard View -->
+            <section id="page-dashboard" class="page-view active">
+                <!-- Stats Cards Row -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-blue">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Orders</span>
+                            <h3 class="stat-value" id="dash-total-orders">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon icon-green">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Verified</span>
+                            <h3 class="stat-value" id="dash-verified-orders">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon icon-yellow">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Pending</span>
+                            <h3 class="stat-value" id="dash-pending-orders">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon icon-red">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Rejected</span>
+                            <h3 class="stat-value" id="dash-rejected-orders">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card stat-card-wide">
+                        <div class="stat-icon icon-purple">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Sales Today</span>
+                            <h3 class="stat-value" id="dash-total-sales">Rs. 0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Quick Actions & Recent Orders -->
+                <div class="dashboard-controls-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-calendar-day"></i> Today's Overview</h3>
+                        <div class="controls-group">
+                            <input type="date" id="dash-date-picker" class="form-control">
+                            <button class="btn btn-secondary" id="dash-refresh-btn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Phone</th>
+                                    <th>Tracking ID</th>
+                                    <th>Product Code</th>
+                                    <th>Product</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-recent-orders-tbody">
+                                <tr><td colspan="8" class="text-center">Loading orders...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page 2: Orders View -->
+            <section id="page-orders" class="page-view">
+                <div class="filter-card">
+                    <div class="filter-row">
+                        <div class="filter-item search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="order-search-input" class="form-control" placeholder="Search by customer, phone, tracking, code, or ID...">
+                        </div>
+                        <div class="filter-item">
+                            <label for="order-date-filter"><i class="fa-solid fa-calendar"></i> Date:</label>
+                            <input type="date" id="order-date-filter" class="form-control">
+                        </div>
+                        <div class="filter-item">
+                            <label for="order-status-filter"><i class="fa-solid fa-filter"></i> Status:</label>
+                            <select id="order-status-filter" class="form-control">
+                                <option value="All">All Statuses</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Verified">Verified</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <button class="btn btn-secondary" id="reset-filters-btn"><i class="fa-solid fa-filter-circle-xmark"></i> Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Phone</th>
+                                    <th>Tracking ID</th>
+                                    <th>Product Code</th>
+                                    <th>Product</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-tbody">
+                                <tr><td colspan="10" class="text-center">Loading orders database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page 3: Daily Report View -->
+            <section id="page-daily-report" class="page-view">
+                <div class="content-card">
+                    <div class="report-header-toolbar">
+                        <div class="date-selection-box">
+                            <label for="daily-report-date"><strong><i class="fa-solid fa-calendar-day"></i> Select Report Date:</strong></label>
+                            <input type="date" id="daily-report-date" class="form-control">
+                            <button class="btn btn-secondary" id="load-daily-report-btn">Load Summary</button>
+                        </div>
+                        <button class="btn btn-success btn-lg" id="download-daily-pdf-btn">
+                            <i class="fa-solid fa-file-pdf"></i> Generate Daily PDF
+                        </button>
+                    </div>
+
+                    <!-- Daily Summary Stats Grid -->
+                    <div class="stats-grid mt-4">
+                        <div class="stat-card">
+                            <span class="stat-label">Total Orders</span>
+                            <h3 class="stat-value" id="daily-rep-total">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Verified Orders</span>
+                            <h3 class="stat-value text-success" id="daily-rep-verified">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Pending Orders</span>
+                            <h3 class="stat-value text-warning" id="daily-rep-pending">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Rejected Orders</span>
+                            <h3 class="stat-value text-danger" id="daily-rep-rejected">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Total Sales</span>
+                            <h3 class="stat-value text-primary" id="daily-rep-sales">Rs. 0</h3>
+                        </div>
+                    </div>
+
+                    <h4 class="mt-4 mb-2"><i class="fa-solid fa-table-list"></i> Orders Preview for Selected Date</h4>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Tracking ID</th>
+                                    <th>Product</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="daily-report-tbody">
+                                <tr><td colspan="6" class="text-center">Select date to load orders</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page 4: Weekly Report View -->
+            <section id="page-weekly-report" class="page-view">
+                <div class="content-card">
+                    <div class="report-header-toolbar">
+                        <div class="date-selection-box">
+                            <div>
+                                <label for="weekly-start-date"><strong>Start Date:</strong></label>
+                                <input type="date" id="weekly-start-date" class="form-control">
+                            </div>
+                            <div>
+                                <label for="weekly-end-date"><strong>End Date:</strong></label>
+                                <input type="date" id="weekly-end-date" class="form-control">
+                            </div>
+                            <button class="btn btn-secondary" id="load-weekly-report-btn">Calculate Report</button>
+                        </div>
+                        <button class="btn btn-success btn-lg" id="download-weekly-pdf-btn">
+                            <i class="fa-solid fa-file-pdf"></i> Generate Weekly PDF
+                        </button>
+                    </div>
+
+                    <!-- Weekly Summary Stats Grid -->
+                    <div class="stats-grid mt-4">
+                        <div class="stat-card">
+                            <span class="stat-label">Total Orders</span>
+                            <h3 class="stat-value" id="weekly-rep-total">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Verified</span>
+                            <h3 class="stat-value text-success" id="weekly-rep-verified">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Pending</span>
+                            <h3 class="stat-value text-warning" id="weekly-rep-pending">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Rejected</span>
+                            <h3 class="stat-value text-danger" id="weekly-rep-rejected">0</h3>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Total Sales</span>
+                            <h3 class="stat-value text-primary" id="weekly-rep-sales">Rs. 0</h3>
+                        </div>
+                    </div>
+
+                    <h4 class="mt-4 mb-2"><i class="fa-solid fa-chart-column"></i> Daily Sales Breakdown (7 Days)</h4>
+                    <div class="table-container mb-4">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Orders Count</th>
+                                    <th>Sales Amount (PKR)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weekly-breakdown-tbody">
+                                <tr><td colspan="3" class="text-center">Select date range to view daily breakdown</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal: Add / Edit Order -->
+    <div class="modal-backdrop" id="order-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-title"><i class="fa-solid fa-cart-plus"></i> Add New Order</h3>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <form id="order-form">
+                <input type="hidden" id="form-order-id">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="customer-name">Customer Name <span class="req">*</span></label>
+                        <input type="text" id="customer-name" class="form-control" placeholder="e.g. Ahmad Ali" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone-number">Phone Number <span class="req">*</span></label>
+                        <input type="text" id="phone-number" class="form-control" placeholder="e.g. 03001234567" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tracking-id">Tracking ID <span class="req">*</span></label>
+                        <input type="text" id="tracking-id" class="form-control" placeholder="e.g. TRX123456789" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product-code">Product Code <span class="req">*</span></label>
+                        <input type="text" id="product-code" class="form-control" placeholder="e.g. PS-01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product-select">Product <span class="req">*</span></label>
+                        <select id="product-select" class="form-control" required>
+                            <option value="" disabled selected>-- Select Product --</option>
+                            <option value="Plain Shine">Plain Shine — Rs. 2,050</option>
+                            <option value="Needle Texture">Needle Texture — Rs. 2,050</option>
+                            <option value="Crocodile Texture">Crocodile Texture — Rs. 2,050</option>
+                            <option value="Snake Texture">Snake Texture — Rs. 2,050</option>
+                            <option value="Softy Grain Leather">Softy Grain Leather — Rs. 2,099</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product-amount">Amount (PKR) <span class="hint">(Auto-calculated)</span></label>
+                        <input type="text" id="product-amount" class="form-control readonly-input" readonly placeholder="Auto-filled on product selection">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="order-date">Order Date <span class="req">*</span></label>
+                        <input type="date" id="order-date" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="order-status">Status <span class="req">*</span></label>
+                        <select id="order-status" class="form-control" required>
+                            <option value="Pending">Pending</option>
+                            <option value="Verified">Verified</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-modal-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-order-btn"><i class="fa-solid fa-floppy-disk"></i> Save Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Delete Confirmation -->
+    <div class="modal-backdrop" id="delete-modal">
+        <div class="modal-box modal-box-sm">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-triangle-exclamation text-danger"></i> Confirm Delete</h3>
+                <button class="close-btn" id="close-delete-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete order <strong id="delete-order-label">#000</strong>?</p>
+                <p class="text-muted small">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-delete-btn">Cancel</button>
+                <button class="btn btn-danger" id="confirm-delete-btn"><i class="fa-solid fa-trash-can"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
